@@ -13,3 +13,16 @@
 // limitations under the License.
 
 package websocket
+
+import (
+	"github.com/stretchr/testify/assert"
+	"github.com/taouniverse/tao"
+	"testing"
+)
+
+func TestNew(t *testing.T) {
+	conn, err := New(nil, nil, Standard())
+	assert.Nil(t, conn)
+	assert.NotNil(t, err)
+	assert.Equal(t, tao.ParamInvalid, err.(tao.ErrorTao).Code())
+}

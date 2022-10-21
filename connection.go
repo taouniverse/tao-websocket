@@ -31,17 +31,25 @@ type Connection struct {
 }
 
 // New constructor of websocket connection
-func New(options []func(*Connection) error) (conn *Connection, err error) {
+func New(w http.ResponseWriter, r *http.Request, options ...func(*Connection) error) (*Connection, error) {
+	if w == nil || r == nil {
+		return nil, tao.NewError(tao.ParamInvalid, "websocket: http writer or request was empty")
+	}
+
+	upgrade, err := HttpUpgrade.Upgrade(w, r, nil)
+	if err != nil {
+		return nil, tao.NewErrorWrapped("websocket: fail to upgrade http", err)
+	}
+
+	conn := &Connection{Conn: upgrade}
+
 	for _, option := range options {
 		err = option(conn)
 		if err != nil {
 			break
 		}
 	}
-	if conn.Conn == nil {
-
-	}
-	return
+	return conn, err
 }
 
 // Response to websocket client
@@ -62,14 +70,15 @@ func (conn *Connection) Response() error {
 // Request from websocket client
 func (conn *Connection) Request() error {
 	for {
-		_, p, err := conn.ReadMessage()
-		if err != nil {
-			return tao.NewErrorWrapped("websocket: fail to read request payload", err)
-		}
 		select {
 		case <-conn.close:
 			return errors.New("websocket: connection has been closed")
-		case conn.requestBuff <- p:
+		default:
+			_, p, err := conn.ReadMessage()
+			if err != nil {
+				return tao.NewErrorWrapped("websocket: fail to read request payload", err)
+			}
+			conn.requestBuff <- p
 		}
 	}
 }
@@ -108,14 +117,6 @@ func (conn *Connection) Close() error {
 /**
 Optional Function for Websocket Connection
 */
-
-// Bind responseWriter & request of handler
-func Bind(w http.ResponseWriter, r *http.Request) func(conn *Connection) error {
-	return func(conn *Connection) (err error) {
-		conn.Conn, err = HttpUpgrade.Upgrade(w, r, nil)
-		return
-	}
-}
 
 // Standard websocket connection
 func Standard() func(conn *Connection) error {
