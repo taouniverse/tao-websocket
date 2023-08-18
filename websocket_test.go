@@ -33,7 +33,7 @@ func TestTao(t *testing.T) {
 }
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := New(w, r, Standard())
+	conn, err := New(w, r)
 	if err != nil {
 		tao.Error(err)
 		return

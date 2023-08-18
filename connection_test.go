@@ -21,7 +21,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	conn, err := New(nil, nil, Standard())
+	conn, err := New(nil, nil)
 	assert.Nil(t, conn)
 	assert.NotNil(t, err)
 	assert.Equal(t, tao.ParamInvalid, err.(tao.ErrorTao).Code())

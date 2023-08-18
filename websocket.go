@@ -37,13 +37,13 @@ func init() {
 	}
 }
 
-// HttpUpgrade upgrade http to websocket
-var HttpUpgrade ws.Upgrader
+// httpUpgrade upgrade http to websocket
+var httpUpgrade ws.Upgrader
 
 // TODO setup unit with the global config 'W'
 // execute when init tao universe
 func setup() error {
-	HttpUpgrade = ws.Upgrader{
+	httpUpgrade = ws.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},

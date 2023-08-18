@@ -36,12 +36,18 @@ func New(w http.ResponseWriter, r *http.Request, options ...func(*Connection) er
 		return nil, tao.NewError(tao.ParamInvalid, "websocket: http writer or request was empty")
 	}
 
-	upgrade, err := HttpUpgrade.Upgrade(w, r, nil)
+	upgrade, err := httpUpgrade.Upgrade(w, r, nil)
 	if err != nil {
 		return nil, tao.NewErrorWrapped("websocket: fail to upgrade http", err)
 	}
 
 	conn := &Connection{Conn: upgrade}
+
+	if len(options) == 0 {
+		options = []func(*Connection) error{
+			Default(),
+		}
+	}
 
 	for _, option := range options {
 		err = option(conn)
@@ -118,8 +124,8 @@ func (conn *Connection) Close() error {
 Optional Function for Websocket Connection
 */
 
-// Standard websocket connection
-func Standard() func(conn *Connection) error {
+// Default websocket connection
+func Default() func(conn *Connection) error {
 	return func(conn *Connection) error {
 		conn.requestBuff = make(chan []byte, 1000)
 		conn.responseBuff = make(chan []byte, 1000)
